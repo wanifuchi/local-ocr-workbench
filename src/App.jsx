@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Settings2 } from 'lucide-react'
+import { History, Settings2 } from 'lucide-react'
 import 'katex/dist/katex.min.css'
 import DocumentPanel from './components/DocumentPanel'
+import HistoryPanel from './components/HistoryPanel'
 import ResultsPanel from './components/ResultsPanel'
 import SettingsModal from './components/SettingsModal'
 import {
@@ -13,6 +14,7 @@ import {
   persistOcrSettings,
 } from './config/ocr'
 import { loadPdf, renderPdfPageToBlob } from './lib/document'
+import { addHistoryEntry, clearHistory, deleteHistoryEntry, getHistory } from './lib/history'
 import { streamOcrMarkdown } from './lib/ocr-api'
 
 function App() {
@@ -38,6 +40,8 @@ function App() {
   const [ocrStats, setOcrStats] = useState(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [ocrSettings, setOcrSettings] = useState(() => getInitialOcrSettings())
+  const [currentView, setCurrentView] = useState('ocr')
+  const [historyItems, setHistoryItems] = useState(() => getHistory())
 
   useEffect(() => {
     return () => {
@@ -150,6 +154,12 @@ function App() {
         if (requestId === ocrRequestIdRef.current) {
           setMarkdown(result.markdown)
           setOcrStats(result.stats)
+
+          addHistoryEntry({
+            fileName: documentFile?.name || '不明なファイル',
+            markdown: result.markdown,
+            blob,
+          }).then(() => setHistoryItems(getHistory()))
         }
       } catch (requestError) {
         if (requestError instanceof Error && requestError.name === 'AbortError') {
@@ -176,7 +186,7 @@ function App() {
         }
       }
     },
-    [ocrSettings, stopActiveOcr],
+    [documentFile, ocrSettings, stopActiveOcr],
   )
 
   useEffect(() => {
@@ -318,6 +328,15 @@ function App() {
             </p>
             <button
               type="button"
+              onClick={() => setCurrentView(currentView === 'history' ? 'ocr' : 'history')}
+              className={`inline-flex h-12 w-12 items-center justify-center rounded-full border bg-white/80 text-[var(--ink-strong)] transition hover:border-[var(--accent)] hover:bg-white ${currentView === 'history' ? 'border-[var(--accent)]' : 'border-[var(--line)]'}`}
+              aria-label="履歴"
+              title="履歴"
+            >
+              <History className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
               onClick={() => setIsSettingsOpen(true)}
               className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 text-[var(--ink-strong)] transition hover:border-[var(--accent)] hover:bg-white"
               aria-label="OCR設定を開く"
@@ -328,33 +347,45 @@ function App() {
           </div>
         </header>
 
-        <section className="grid flex-1 gap-6 lg:grid-cols-[2fr_3fr]">
-          <DocumentPanel
-            canMoveBackward={canMoveBackward}
-            canMoveForward={canMoveForward}
-            currentPage={currentPage}
-            documentFile={documentFile}
-            documentKind={documentKind}
-            error={error}
-            inputRef={inputRef}
-            isPreparingPage={isPreparingPage}
-            onFileChange={handleFileChange}
-            onNextPage={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
-            onPageSelect={setCurrentPage}
-            onPreviousPage={() => setCurrentPage((page) => Math.max(1, page - 1))}
-            onSelectFile={() => inputRef.current?.click()}
-            pageCount={pageCount}
-            pagePreviewUrl={pagePreviewUrl}
+        {currentView === 'history' ? (
+          <HistoryPanel
+            history={historyItems}
+            onDelete={(id) => setHistoryItems(deleteHistoryEntry(id))}
+            onClear={() => {
+              clearHistory()
+              setHistoryItems([])
+            }}
+            onBack={() => setCurrentView('ocr')}
           />
+        ) : (
+          <section className="grid flex-1 gap-6 lg:grid-cols-[2fr_3fr]">
+            <DocumentPanel
+              canMoveBackward={canMoveBackward}
+              canMoveForward={canMoveForward}
+              currentPage={currentPage}
+              documentFile={documentFile}
+              documentKind={documentKind}
+              error={error}
+              inputRef={inputRef}
+              isPreparingPage={isPreparingPage}
+              onFileChange={handleFileChange}
+              onNextPage={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+              onPageSelect={setCurrentPage}
+              onPreviousPage={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              onSelectFile={() => inputRef.current?.click()}
+              pageCount={pageCount}
+              pagePreviewUrl={pagePreviewUrl}
+            />
 
-          <ResultsPanel
-            isLoading={isLoading}
-            isStreaming={isStreaming}
-            markdown={markdown}
-            onStop={() => stopActiveOcr('user')}
-            stats={stats}
-          />
-        </section>
+            <ResultsPanel
+              isLoading={isLoading}
+              isStreaming={isStreaming}
+              markdown={markdown}
+              onStop={() => stopActiveOcr('user')}
+              stats={stats}
+            />
+          </section>
+        )}
       </div>
 
       {isSettingsOpen ? (
