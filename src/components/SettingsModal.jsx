@@ -16,17 +16,17 @@ function SettingsModal({
       <div className="w-full max-w-2xl rounded-[2rem] border border-white/60 bg-[rgba(255,250,245,0.96)] p-6 shadow-[0_30px_90px_rgba(28,34,45,0.16)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="eyebrow">Settings</p>
+            <p className="eyebrow">設定</p>
             <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">
-              Override the default model. Changes are saved to this browser only.
+              デフォルトのモデルを変更できます。変更はこのブラウザにのみ保存されます。
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 text-[var(--ink-strong)] transition hover:bg-white"
-            aria-label="Close settings"
-            title="Close settings"
+            aria-label="設定を閉じる"
+            title="設定を閉じる"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -35,7 +35,7 @@ function SettingsModal({
         <div className="mt-6 space-y-4">
           <label className="block">
             <span className="mb-2 block text-sm font-semibold text-[var(--ink-strong)]">
-              Model
+              モデル
             </span>
             <input
               type="text"
@@ -49,14 +49,14 @@ function SettingsModal({
               className="w-full rounded-[1rem] border border-[var(--line)] bg-white/90 px-4 py-3 text-sm text-[var(--ink-strong)] outline-none transition focus:border-[var(--accent)]"
             />
             <span className="mt-2 block text-xs leading-5 text-[var(--muted)]">
-              Default: {defaults.model}
+              デフォルト: {defaults.model}
             </span>
           </label>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-[var(--muted)]">
-            {hasOverrides ? 'Using saved browser overrides.' : 'Using defaults.'}
+            {hasOverrides ? 'ブラウザに保存された設定を使用中' : 'デフォルト設定を使用中'}
           </div>
 
           <div className="flex flex-wrap justify-end gap-3">
@@ -66,7 +66,7 @@ function SettingsModal({
               className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--ink-strong)] transition hover:bg-white"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Reset
+              リセット
             </button>
             <button
               type="button"
@@ -74,7 +74,7 @@ function SettingsModal({
               className="inline-flex items-center gap-2 rounded-full bg-[var(--ink-strong)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent)]"
             >
               <Save className="h-4 w-4" aria-hidden="true" />
-              Save Overrides
+              保存
             </button>
           </div>
         </div>

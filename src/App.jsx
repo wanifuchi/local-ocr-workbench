@@ -94,7 +94,7 @@ function App() {
         setError(
           renderError instanceof Error
             ? renderError.message
-            : 'Failed to render the selected PDF page.',
+            : 'PDFページの描画に失敗しました',
         )
       } finally {
         if (!cancelled && renderId === pageRenderIdRef.current) {
@@ -154,7 +154,7 @@ function App() {
       } catch (requestError) {
         if (requestError instanceof Error && requestError.name === 'AbortError') {
           if (requestId === ocrRequestIdRef.current && abortReasonRef.current === 'user') {
-            setError('OCR stopped.')
+            setError('OCRを停止しました')
           }
 
           return
@@ -164,7 +164,7 @@ function App() {
           setError(
             requestError instanceof Error
               ? requestError.message
-              : 'The OCR request failed.',
+              : 'OCRリクエストに失敗しました',
           )
         }
       } finally {
@@ -196,7 +196,7 @@ function App() {
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
 
     if (!isImage && !isPdf) {
-      setError('Choose an image or a PDF.')
+      setError('画像またはPDFを選択してください')
       return
     }
 
@@ -253,7 +253,7 @@ function App() {
       setPageCount(0)
       setIsPreparingPage(false)
       setError(
-        loadError instanceof Error ? loadError.message : 'Failed to open the PDF.',
+        loadError instanceof Error ? loadError.message : 'PDFを開けませんでした',
       )
     }
   }
@@ -302,17 +302,17 @@ function App() {
         <header className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-white/50 bg-white/65 px-6 py-3.5 shadow-[0_30px_80px_rgba(28,34,45,0.08)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-h-12 items-center">
             <h1 className="text-xl font-semibold leading-none text-[var(--ink-strong)] sm:text-2xl">
-              Local OCR Workbench
+              もじよみ
             </h1>
           </div>
           <div className="flex items-center gap-3 self-start sm:self-auto">
             {hasOverrides ? (
               <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                Custom Settings
+                カスタム設定
               </span>
             ) : null}
             <p className="text-sm font-medium text-[var(--muted)] sm:text-base">
-              Model:
+              モデル:
               {' '}
               <span className="text-[var(--ink-strong)]">{ocrSettings.model}</span>
             </p>
@@ -320,8 +320,8 @@ function App() {
               type="button"
               onClick={() => setIsSettingsOpen(true)}
               className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 text-[var(--ink-strong)] transition hover:border-[var(--accent)] hover:bg-white"
-              aria-label="Open OCR settings"
-              title="OCR settings"
+              aria-label="OCR設定を開く"
+              title="OCR設定"
             >
               <Settings2 className="h-5 w-5" aria-hidden="true" />
             </button>

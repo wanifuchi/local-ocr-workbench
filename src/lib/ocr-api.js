@@ -21,11 +21,11 @@ export async function streamOcrMarkdown({ blob, onChunk, settings, signal }) {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
-    throw new Error(payload?.error || 'The OCR request failed.')
+    throw new Error(payload?.error || 'OCRリクエストに失敗しました')
   }
 
   if (!response.body) {
-    throw new Error('The browser did not receive a readable response stream.')
+    throw new Error('ブラウザがレスポンスストリームを受信できませんでした')
   }
 
   const reader = response.body.getReader()
@@ -109,7 +109,7 @@ function buildOcrResult({ markdown, firstTokenAt, requestStartedAt }) {
   const finalMarkdown = markdown.trim()
 
   if (!finalMarkdown) {
-    throw new Error('The model returned an empty response.')
+    throw new Error('モデルから空のレスポンスが返されました')
   }
 
   return {

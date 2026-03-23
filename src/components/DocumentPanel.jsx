@@ -20,7 +20,7 @@ function DocumentPanel({
   return (
     <div className="panel h-auto self-start">
       <div className="mb-5 flex items-start justify-between gap-3">
-        <p className="eyebrow">Input</p>
+        <p className="eyebrow">入力</p>
         {documentFile ? (
           <span className="rounded-full bg-white/85 px-3 py-1.5 text-sm text-[var(--ink-strong)]">
             {documentFile.name}
@@ -49,7 +49,7 @@ function DocumentPanel({
         {pagePreviewUrl ? (
           <img
             src={pagePreviewUrl}
-            alt={documentFile?.name || 'Selected upload preview'}
+            alt={documentFile?.name || 'アップロードプレビュー'}
             className="max-h-[26rem] w-full rounded-[1.25rem] object-contain shadow-[0_20px_45px_rgba(44,38,32,0.14)]"
           />
         ) : (
@@ -58,7 +58,7 @@ function DocumentPanel({
               <ImageUp className="h-8 w-8" aria-hidden="true" />
             </div>
             <p className="text-sm leading-6 text-[var(--muted)]">
-              Drop a file here or click to browse.
+              ファイルをドロップするか、クリックして選択してください
             </p>
           </div>
         )}
@@ -66,7 +66,7 @@ function DocumentPanel({
         {isPreparingPage ? (
           <div className="absolute inset-0 flex items-center justify-center bg-[rgba(255,250,245,0.78)] backdrop-blur-[2px]">
             <div className="rounded-full bg-[rgba(22,90,120,0.14)] px-4 py-2 text-sm font-semibold text-[rgb(22,90,120)] shadow-[0_10px_30px_rgba(22,90,120,0.12)]">
-              Preparing page...
+              ページを準備中...
             </div>
           </div>
         ) : null}
@@ -81,10 +81,10 @@ function DocumentPanel({
               disabled={!canMoveBackward || isPreparingPage}
               className="rounded-full px-3 py-2 text-sm font-semibold text-[var(--ink-strong)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:text-slate-400"
             >
-              Prev
+              前へ
             </button>
             <label className="flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink-strong)]">
-              <span className="sr-only">Jump to page</span>
+              <span className="sr-only">ページに移動</span>
               <select
                 value={currentPage}
                 onChange={(event) => onPageSelect(Number(event.target.value))}
@@ -107,7 +107,7 @@ function DocumentPanel({
               disabled={!canMoveForward || isPreparingPage}
               className="rounded-full px-3 py-2 text-sm font-semibold text-[var(--ink-strong)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:text-slate-400"
             >
-              Next
+              次へ
             </button>
           </div>
         ) : null}
