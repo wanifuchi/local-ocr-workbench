@@ -1,14 +1,6 @@
 import { RotateCcw, Save, X } from 'lucide-react'
 import { useState } from 'react'
 
-function EnvBadge() {
-  return (
-    <span className="rounded-full bg-white/85 px-2.5 py-1 text-xs font-semibold text-[var(--ink-strong)]">
-      .env
-    </span>
-  )
-}
-
 function SettingsModal({
   defaults,
   hasOverrides,
@@ -26,14 +18,7 @@ function SettingsModal({
           <div>
             <p className="eyebrow">Settings</p>
             <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">
-              These values are loaded from
-              {' '}
-              <EnvBadge />
-              . To persist changes for the project, update the
-              {' '}
-              <EnvBadge />
-              {' '}
-              file. Editing here only saves to this browser.
+              Override the default model. Changes are saved to this browser only.
             </p>
           </div>
           <button
@@ -50,26 +35,6 @@ function SettingsModal({
         <div className="mt-6 space-y-4">
           <label className="block">
             <span className="mb-2 block text-sm font-semibold text-[var(--ink-strong)]">
-              OCR endpoint
-            </span>
-            <input
-              type="text"
-              value={draft.endpoint}
-              onChange={(event) =>
-                setDraft((currentDraft) => ({
-                  ...currentDraft,
-                  endpoint: event.target.value,
-                }))
-              }
-              className="w-full rounded-[1rem] border border-[var(--line)] bg-white/90 px-4 py-3 text-sm text-[var(--ink-strong)] outline-none transition focus:border-[var(--accent)]"
-            />
-            <span className="mt-2 block text-xs leading-5 text-[var(--muted)]">
-              Default from <EnvBadge />: {defaults.endpoint}
-            </span>
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[var(--ink-strong)]">
               Model
             </span>
             <input
@@ -84,14 +49,14 @@ function SettingsModal({
               className="w-full rounded-[1rem] border border-[var(--line)] bg-white/90 px-4 py-3 text-sm text-[var(--ink-strong)] outline-none transition focus:border-[var(--accent)]"
             />
             <span className="mt-2 block text-xs leading-5 text-[var(--muted)]">
-              Default from <EnvBadge />: {defaults.model}
+              Default: {defaults.model}
             </span>
           </label>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-[var(--muted)]">
-            {hasOverrides ? 'Using saved browser overrides.' : <>Using <EnvBadge /> defaults.</>}
+            {hasOverrides ? 'Using saved browser overrides.' : 'Using defaults.'}
           </div>
 
           <div className="flex flex-wrap justify-end gap-3">

@@ -1,23 +1,21 @@
-import { OCR_PROMPT, normalizeOcrSettings, resolveOcrRequestUrl } from '../config/ocr'
+import { OCR_PROMPT, normalizeOcrSettings } from '../config/ocr'
 import { readBlobAsBase64 } from './document'
 
 export async function streamOcrMarkdown({ blob, onChunk, settings, signal }) {
   const ocrSettings = normalizeOcrSettings(settings)
   const requestStartedAt = performance.now()
   const encodedImage = await readBlobAsBase64(blob)
-  const response = await fetch(resolveOcrRequestUrl(ocrSettings), {
+
+  const response = await fetch('/api/ocr', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     signal,
     body: JSON.stringify({
-      model: ocrSettings.model,
+      image: encodedImage,
       prompt: OCR_PROMPT,
-      images: [encodedImage],
-      options: {
-        temperature: 0,
-      },
+      model: ocrSettings.model,
     }),
   })
 
@@ -35,7 +33,6 @@ export async function streamOcrMarkdown({ blob, onChunk, settings, signal }) {
   let pending = ''
   let streamedMarkdown = ''
   let firstTokenAt = null
-  let tokensPerSecond = null
 
   while (true) {
     const { value, done } = await reader.read()
@@ -51,56 +48,53 @@ export async function streamOcrMarkdown({ blob, onChunk, settings, signal }) {
     for (const line of lines) {
       const trimmedLine = line.trim()
 
-      if (!trimmedLine) {
+      if (!trimmedLine || trimmedLine === 'data: [DONE]') {
         continue
       }
 
-      const chunk = JSON.parse(trimmedLine)
+      // Gemini SSE 形式: "data: {...json...}"
+      if (trimmedLine.startsWith('data: ')) {
+        const jsonStr = trimmedLine.slice(6)
 
-      if (chunk.error) {
-        throw new Error(chunk.error)
-      }
+        try {
+          const chunk = JSON.parse(jsonStr)
+          const text = chunk?.candidates?.[0]?.content?.parts?.[0]?.text
 
-      if (typeof chunk.response === 'string' && chunk.response) {
-        if (firstTokenAt === null) {
-          firstTokenAt = performance.now()
+          if (typeof text === 'string' && text) {
+            if (firstTokenAt === null) {
+              firstTokenAt = performance.now()
+            }
+
+            streamedMarkdown += text
+            onChunk(streamedMarkdown)
+          }
+        } catch {
+          // JSON解析エラーは無視して次のチャンクへ
         }
-
-        streamedMarkdown += chunk.response
-        onChunk(streamedMarkdown)
-      }
-
-      if (chunk.done) {
-        if (
-          typeof chunk.eval_count === 'number' &&
-          typeof chunk.eval_duration === 'number' &&
-          chunk.eval_duration > 0
-        ) {
-          tokensPerSecond = (chunk.eval_count / chunk.eval_duration) * 1_000_000_000
-        }
-
-        return buildOcrResult({
-          markdown: streamedMarkdown,
-          firstTokenAt,
-          requestStartedAt,
-          tokensPerSecond,
-        })
       }
     }
   }
 
+  // 残りのバッファを処理
   const trailingLine = pending.trim()
 
-  if (trailingLine) {
-    const chunk = JSON.parse(trailingLine)
+  if (trailingLine && trailingLine.startsWith('data: ') && trailingLine !== 'data: [DONE]') {
+    const jsonStr = trailingLine.slice(6)
 
-    if (chunk.error) {
-      throw new Error(chunk.error)
-    }
+    try {
+      const chunk = JSON.parse(jsonStr)
+      const text = chunk?.candidates?.[0]?.content?.parts?.[0]?.text
 
-    if (typeof chunk.response === 'string' && chunk.response) {
-      streamedMarkdown += chunk.response
-      onChunk(streamedMarkdown)
+      if (typeof text === 'string' && text) {
+        if (firstTokenAt === null) {
+          firstTokenAt = performance.now()
+        }
+
+        streamedMarkdown += text
+        onChunk(streamedMarkdown)
+      }
+    } catch {
+      // JSON解析エラーは無視
     }
   }
 
@@ -108,11 +102,10 @@ export async function streamOcrMarkdown({ blob, onChunk, settings, signal }) {
     markdown: streamedMarkdown,
     firstTokenAt,
     requestStartedAt,
-    tokensPerSecond,
   })
 }
 
-function buildOcrResult({ markdown, firstTokenAt, requestStartedAt, tokensPerSecond }) {
+function buildOcrResult({ markdown, firstTokenAt, requestStartedAt }) {
   const finalMarkdown = markdown.trim()
 
   if (!finalMarkdown) {
@@ -123,7 +116,7 @@ function buildOcrResult({ markdown, firstTokenAt, requestStartedAt, tokensPerSec
     markdown: finalMarkdown,
     stats: {
       ttftMs: firstTokenAt === null ? null : Math.max(0, firstTokenAt - requestStartedAt),
-      tokensPerSecond,
+      tokensPerSecond: null,
     },
   }
 }

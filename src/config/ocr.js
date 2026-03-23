@@ -1,7 +1,5 @@
 export const DEFAULT_OCR_SETTINGS = Object.freeze({
-  baseUrl: import.meta.env.VITE_OCR_BASE_URL || '/api/proxy',
-  endpoint: import.meta.env.VITE_OCR_ENDPOINT || '/api/generate',
-  model: import.meta.env.VITE_OCR_MODEL || 'glm-ocr',
+  model: import.meta.env.VITE_OCR_MODEL || 'gemini-2.5-flash',
 })
 
 export const OCR_SETTINGS_STORAGE_KEY = 'local-ocr-workbench.ocr-settings'
@@ -27,8 +25,6 @@ Return only Markdown and inline HTML with no explanation.`
 
 export function normalizeOcrSettings(settings = {}) {
   return {
-    baseUrl: normalizeSettingValue(settings.baseUrl, DEFAULT_OCR_SETTINGS.baseUrl),
-    endpoint: normalizeSettingValue(settings.endpoint, DEFAULT_OCR_SETTINGS.endpoint),
     model: normalizeSettingValue(settings.model, DEFAULT_OCR_SETTINGS.model),
   }
 }
@@ -70,27 +66,10 @@ export function clearPersistedOcrSettings() {
   window.localStorage.removeItem(OCR_SETTINGS_STORAGE_KEY)
 }
 
-export function resolveOcrRequestUrl(settings) {
-  const { baseUrl, endpoint } = normalizeOcrSettings(settings)
-
-  if (isAbsoluteUrl(endpoint)) {
-    return endpoint
-  }
-
-  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
-
-  return `${normalizedBaseUrl}${normalizedEndpoint}`
-}
-
 export function hasOcrSettingsOverride(settings) {
   const normalizedSettings = normalizeOcrSettings(settings)
 
-  return (
-    normalizedSettings.baseUrl !== DEFAULT_OCR_SETTINGS.baseUrl ||
-    normalizedSettings.endpoint !== DEFAULT_OCR_SETTINGS.endpoint ||
-    normalizedSettings.model !== DEFAULT_OCR_SETTINGS.model
-  )
+  return normalizedSettings.model !== DEFAULT_OCR_SETTINGS.model
 }
 
 function normalizeSettingValue(value, fallback) {
@@ -100,26 +79,4 @@ function normalizeSettingValue(value, fallback) {
 
   const trimmedValue = value.trim()
   return trimmedValue || fallback
-}
-
-function normalizeBaseUrl(baseUrl) {
-  const trimmedBaseUrl = baseUrl.trim()
-
-  if (!trimmedBaseUrl) {
-    return ''
-  }
-
-  if (isAbsoluteUrl(trimmedBaseUrl)) {
-    return trimmedBaseUrl.replace(/\/+$/, '')
-  }
-
-  const prefixedBaseUrl = trimmedBaseUrl.startsWith('/')
-    ? trimmedBaseUrl
-    : `/${trimmedBaseUrl}`
-
-  return prefixedBaseUrl.replace(/\/+$/, '')
-}
-
-function isAbsoluteUrl(value) {
-  return /^https?:\/\//i.test(value)
 }
