@@ -311,7 +311,7 @@ function App() {
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-white/50 bg-white/65 px-6 py-3.5 shadow-[0_30px_80px_rgba(28,34,45,0.08)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-h-12 items-center">
-            <h1 className="text-xl font-semibold leading-none text-[var(--ink-strong)] sm:text-2xl">
+            <h1 className="text-2xl leading-none text-[var(--ink-strong)] sm:text-3xl" style={{ fontFamily: "'Yomogi', cursive" }}>
               もじよみ
             </h1>
           </div>
